@@ -211,12 +211,12 @@ export class Service {
         where: { id: data.datap.id },
       })
 
-      return `{
+      return {
         data: {
           count: 1,
           items: [result],
         },
-      }`
+      }
     },
   }
 }
