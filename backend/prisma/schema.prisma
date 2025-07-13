@@ -26,7 +26,7 @@ model Pokemon {
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  password  String
+  password  String @default("temp_password") // adicionando um password temporário pois o banco já conta com 50 registros vindo do seed sem password. 
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
