@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Eye, EyeOff, Shield, ArrowRight } from "lucide-react";
 import { SIGNUP_MUTATION, client } from "@/lib/graphqlClient";
+import { useRouter } from "next/navigation";
 
 interface SignupResponse {
   signup: {
@@ -30,6 +31,8 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +67,8 @@ export default function RegisterPage() {
           signupResponse.error.errors.map((err: any) => err.message).join("\n")
         );
       } else {
-        alert("Conta criada com sucesso!");
+        alert("Conta criada com sucesso! Você será redirecionado ao login.");
+        router.push("/login");
         console.log("Token JWT:", signupResponse.token);
         // Redirecionar ou salvar token aqui
       }
