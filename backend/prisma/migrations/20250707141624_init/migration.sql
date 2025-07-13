@@ -1,3 +1,4 @@
+CREATE SCHEMA IF NOT EXISTS "workspace";
 -- CreateTable
 CREATE TABLE "workspace"."Pokemon" (
     "id" SERIAL NOT NULL,
