@@ -15,6 +15,8 @@ import { PokemonModule } from './modules/pokemon/module'
 import { ProfileModule } from './modules/profile/module'
 import { PostModule } from './modules/post/module'
 import { UserModule } from './modules/user/module'
+import { AuthModule } from './modules/auth/module'
+
 @Module({
   controllers: [AppController],
   imports: [
@@ -28,6 +30,7 @@ import { UserModule } from './modules/user/module'
     CategoryModule,
     LargeTableModule,
     NotificationModule,
+    AuthModule,
     ServeStaticModule.forRoot({
       rootPath: join('./src/static'),
       serveRoot: '/static',
