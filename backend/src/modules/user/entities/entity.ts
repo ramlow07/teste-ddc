@@ -14,6 +14,11 @@ export class MainEntity {
   email: string
   static emailZod = z.string().email()
 
+  @Field(() => String)
+  password: string
+  static passwordZod = z.string().min(6)
+
+
   @Field(() => String, { nullable: true })
   name?: string
   static nameZod = z.string().min(1).optional()
@@ -39,6 +44,10 @@ export class CreateDTO implements createDTODBType {
   @Field(() => String)
   email: string
   static emailZod = MainEntity.emailZod
+
+  @Field(() => String)
+  password: string
+  static passwordZod = MainEntity.passwordZod
 
   @Field(() => String, { nullable: true })
   name?: string
