@@ -21,10 +21,63 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // UI only - no logic
-    console.log("Register form submitted:", formData);
+
+    if (!acceptTerms) {
+      alert("Você deve aceitar os termos de uso.");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("As senhas não coincidem.");
+      return;
+    }
+
+    const mutation = `
+    mutation Signup($data: SignupDTO!) {
+      signup(data: $data) {
+        token
+        error {
+          errors {
+            message
+            path
+          }
+        }
+      }
+    }
+  `;
+
+    const variables = {
+      data: {
+        email: formData.email,
+        password: formData.password,
+        name: `${formData.firstName} ${formData.lastName}`,
+      },
+    };
+
+    try {
+      const res = await fetch("http://localhost:3001/graphql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: mutation, variables }),
+      });
+
+      const result = await res.json();
+      const response = result.data.signup;
+
+      if (response.error) {
+        console.error("Erro ao registrar:", response.error.errors);
+        alert(response.error.errors.map((err: any) => err.message).join("\n"));
+      } else {
+        alert("Conta criada com sucesso!");
+        console.log("Token JWT:", response.token);
+        // Redirecionar ou armazenar token
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      alert("Erro inesperado ao criar conta.");
+    }
   };
 
   const handleChange = (field: string, value: string) => {
