@@ -8,6 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Eye, EyeOff, Shield, ArrowRight } from "lucide-react";
+import { SIGNUP_MUTATION, client } from "@/lib/graphqlClient";
+
+interface SignupResponse {
+  signup: {
+    token?: string;
+    error?: {
+      errors: { message: string; path?: string[] }[];
+    } | null;
+  };
+}
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -34,45 +44,29 @@ export default function RegisterPage() {
       return;
     }
 
-    const mutation = `
-    mutation Signup($data: SignupDTO!) {
-      signup(data: $data) {
-        token
-        error {
-          errors {
-            message
-            path
-          }
-        }
-      }
-    }
-  `;
-
-    const variables = {
-      data: {
-        email: formData.email,
-        password: formData.password,
-        name: `${formData.firstName} ${formData.lastName}`,
-      },
-    };
-
     try {
-      const res = await fetch("http://localhost:3001/graphql", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: mutation, variables }),
-      });
+      const variables = {
+        data: {
+          email: formData.email,
+          password: formData.password,
+          name: `${formData.firstName} ${formData.lastName}`,
+        },
+      };
 
-      const result = await res.json();
-      const response = result.data.signup;
+      const response = await client.request<SignupResponse>(
+        SIGNUP_MUTATION,
+        variables
+      );
+      const signupResponse = response.signup;
 
-      if (response.error) {
-        console.error("Erro ao registrar:", response.error.errors);
-        alert(response.error.errors.map((err: any) => err.message).join("\n"));
+      if (signupResponse.error) {
+        alert(
+          signupResponse.error.errors.map((err: any) => err.message).join("\n")
+        );
       } else {
         alert("Conta criada com sucesso!");
-        console.log("Token JWT:", response.token);
-        // Redirecionar ou armazenar token
+        console.log("Token JWT:", signupResponse.token);
+        // Redirecionar ou salvar token aqui
       }
     } catch (error) {
       console.error("Erro na requisição:", error);
