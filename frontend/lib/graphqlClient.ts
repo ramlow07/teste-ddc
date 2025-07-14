@@ -18,3 +18,17 @@ export const SIGNUP_MUTATION = gql`
     }
   }
 `;
+
+export const LOGIN_MUTATION = gql`
+  mutation Login($data: LoginDTO!) {
+    login(data: $data) {
+      token
+      error {
+        errors {
+          message
+          path
+        }
+      }
+    }
+  }
+`;
