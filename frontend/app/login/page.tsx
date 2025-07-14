@@ -8,6 +8,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Eye, EyeOff, Shield, ArrowRight } from "lucide-react";
+import { LOGIN_MUTATION } from "@/lib/graphqlClient";
+import { GraphQLClient } from "graphql-request";
+import { useRouter } from "next/navigation";
+
+interface LoginResponse {
+  login: {
+    token?: string;
+    error?: {
+      errors: {
+        message: string;
+        path: string[];
+      }[];
+    };
+  };
+}
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -17,14 +32,43 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // UI only - no logic
-    console.log("Login form submitted:", formData);
-  };
+  const router = useRouter();
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const client = new GraphQLClient("http://localhost:3001/graphql");
+
+    const variables = {
+      data: {
+        email: formData.email,
+        password: formData.password,
+      },
+    };
+
+    try {
+      const response = await client.request<LoginResponse>(
+        LOGIN_MUTATION,
+        variables
+      );
+      const loginResponse = response.login;
+
+      if (loginResponse.error) {
+        console.error("Erro no login:", loginResponse.error.errors);
+        alert(
+          loginResponse.error.errors
+            .map((err: any) => `${err.path[0]}: ${err.message}`)
+            .join("\n")
+        );
+      } else {
+        console.log("Login bem-sucedido:", loginResponse.token);
+        localStorage.setItem("token", loginResponse.token);
+        router.push("/dashboard"); // redireciona
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      alert("Erro inesperado ao tentar fazer login.");
+    }
   };
 
   return (
