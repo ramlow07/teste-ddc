@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Eye, EyeOff, Shield, ArrowRight } from "lucide-react";
-import { LOGIN_MUTATION } from "@/lib/graphqlClient";
+import { LOGIN_MUTATION } from "@/lib/graphql/graphqlClient";
 import { GraphQLClient } from "graphql-request";
 import { useRouter } from "next/navigation";
 
@@ -63,7 +63,7 @@ export default function LoginPage() {
       } else {
         console.log("Login bem-sucedido:", loginResponse.token);
         localStorage.setItem("token", loginResponse.token);
-        router.push("/dashboard"); // redireciona
+        router.push("/"); // redireciona pra main page
       }
     } catch (error) {
       console.error("Erro na requisição:", error);
