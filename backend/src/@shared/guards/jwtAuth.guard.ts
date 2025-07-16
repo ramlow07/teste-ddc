@@ -17,6 +17,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const request = this.getRequest(context)
 
+
     if (!request.headers.authorization) {
       throw new UnauthorizedException({ message: 'No authorization header' })
     }

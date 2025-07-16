@@ -87,7 +87,7 @@ async signup(data: ExecutionDTOType<SignupDTO, 'signup'>): Promise<AuthResponse>
     }
 
     // Gerar token JWT
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, data: ["api-ler-pokemon"] };
     const token = this.jwtService.sign(payload);
 
     console.log('Login realizado com sucesso');

@@ -11,16 +11,21 @@ export class Service {
   constructor(private readonly prisma: PrismaService) {}
 
   async execute(data: ExecutionDTOType<any, any>): Promise<EntityResponse> {
+   
     let DTO = data
     for (const rule of Object.values(this[data.method].rules)) {
+      console.log('Executando regra:', rule
+      );
       DTO = await (rule as any)(DTO)
+      console.log('Resultado da regra:', DTO);
       if (DTO.error) {
+        console.log('Erro retornado pela regra:', DTO.error);
         return DTO.error
       }
     }
 
     const result = await this[data.method].execution(DTO)
-
+console.log('Resultado da execução:', result);
     return result
   }
 
@@ -82,7 +87,7 @@ export class Service {
 
   get: MethodType<ExecutionDTOType<GetDTO, 'get'>, EntityResponse> = {
     rules: {
-      perm: async (data) => {
+    perm: async (data) => {
         // Check permission for reading pokemon
         if (
           (await checkPermission({ prisma: this.prisma, token: data.tokenData, data: ['api-ler-pokemon'] })).permitted
@@ -90,14 +95,17 @@ export class Service {
           return data
         }
         data.error = { error: { forbidden: 'Sem permissão para o recurso' } }
+        console.log("permissão checada no GetDTO")
         return data
-      },
+      }, 
       validateDTOData: async (data) => {
+        console.log("validateDTOData foi chamado")
         const validatedData = ZodValidationError.validate(GetDTO.zodSchema(), data.datap)
         if ('errors' in validatedData) {
           data.error = { error: { errors: validatedData.errors } }
         }
         data.datap = validatedData as any
+         console.log("validatedData é:", validatedData)
         return data
       },
     },

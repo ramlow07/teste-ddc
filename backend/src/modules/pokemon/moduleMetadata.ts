@@ -2,7 +2,7 @@ import { Pokemon, Prisma } from '@prisma/client'
 
 export type moduleMetadataType = {
   name: 'Pokemon'
-  tb: 'pokemon'
+  tb: 'Pokemon'
 }
 
 export type tableType = Pokemon
@@ -12,7 +12,7 @@ export type whereInputType = Prisma.PokemonWhereInput
 
 export const moduleMetadata: moduleMetadataType = {
   name: 'Pokemon',
-  tb: 'pokemon',
+  tb: 'Pokemon',
 }
 
 export { MainEntity as PokemonEntity } from './entities/entity'

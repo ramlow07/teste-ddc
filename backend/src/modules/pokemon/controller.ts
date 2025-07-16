@@ -18,7 +18,11 @@ export class GraphQLController {
 
   @UseGuards(JwtAuthGuard)
   @Query(() => EntityResponse, { name: 'get' + moduleMetadata.name + 's' })
+
   async get(@Context() context: any, @Args('data') data: GetDTO, method = 'get'): Promise<EntityResponse> {
+    // console.log('Controlador getPokemons chamado');
+    // console.log('req.user:', context.req.user);
+    context.req.tokenData = context.req.user;
     return await genericCaller.bind(this)(context, data, method)
   }
 

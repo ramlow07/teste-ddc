@@ -1,7 +1,10 @@
-import { gql } from "graphql-request";
+import { GraphQLClient, gql } from "graphql-request";
+
+const endpoint = "http://localhost:3001/graphql"; // url apontando pro backend
+export const client = new GraphQLClient(endpoint);
 
 export const GET_POKEMONS_QUERY = gql`
-  query GetPokemon($data: GetPokemonsDTO!) {
+  query getPokemons($data: GetPokemonsDTO!) {
     getPokemons(data: $data) {
       data {
         count
