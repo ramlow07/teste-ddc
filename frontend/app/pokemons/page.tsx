@@ -1,72 +1,103 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Table } from "@/components/ui/table"
-import { Modal } from "@/components/ui/modal"
-import { Pagination } from "@/components/ui/pagination"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Table } from "@/components/ui/table";
+import { Modal } from "@/components/ui/modal";
+import { Pagination } from "@/components/ui/pagination";
+import { Plus, Edit, Trash2 } from "lucide-react";
 
-const pokemonData = [
-  {
-    id: 1,
-    name: "Pikachu",
-    type: "Electric",
-    ability: "Static",
-    image: "/placeholder.svg?height=40&width=40",
-    createdAt: "2024-01-15",
-  },
-  {
-    id: 2,
-    name: "Charizard",
-    type: "Fire/Flying",
-    ability: "Blaze",
-    image: "/placeholder.svg?height=40&width=40",
-    createdAt: "2024-01-14",
-  },
-  {
-    id: 3,
-    name: "Blastoise",
-    type: "Water",
-    ability: "Torrent",
-    image: "/placeholder.svg?height=40&width=40",
-    createdAt: "2024-01-13",
-  },
-  {
-    id: 4,
-    name: "Venusaur",
-    type: "Grass/Poison",
-    ability: "Overgrow",
-    image: "/placeholder.svg?height=40&width=40",
-    createdAt: "2024-01-12",
-  },
-  {
-    id: 5,
-    name: "Gengar",
-    type: "Ghost/Poison",
-    ability: "Cursed Body",
-    image: "/placeholder.svg?height=40&width=40",
-    createdAt: "2024-01-11",
-  },
-]
+import {
+  GET_POKEMONS_QUERY,
+  DELETE_POKEMON_MUTATION,
+} from "@/lib/graphql/pokemon";
+import { request, GraphQLClient, gql } from "graphql-request";
 
 export default function PokemonsPage() {
-  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; pokemon: any }>({
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    pokemon: any;
+  }>({
     isOpen: false,
     pokemon: null,
-  })
+  });
+
+  const [pokemon, setPokemon] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleDelete = (pokemon: any) => {
-    setDeleteModal({ isOpen: true, pokemon })
-  }
+    setDeleteModal({ isOpen: true, pokemon });
+  };
 
-  const confirmDelete = () => {
-    // Handle delete logic here
-    console.log("Deleting pokemon:", deleteModal.pokemon)
-    setDeleteModal({ isOpen: false, pokemon: null })
-  }
+  const confirmDelete = async () => {
+    if (!deleteModal.pokemon || !token) return;
+
+    try {
+      const endpoint = "http://localhost:3001/graphql";
+      const variables = {
+        data: {
+          id: deleteModal.pokemon.id,
+        },
+      };
+
+      const res = await request(endpoint, DELETE_POKEMON_MUTATION, variables, {
+        Authorization: `Bearer ${token}`,
+      });
+
+      const deleted = res.deletePokemon?.data?.items?.[0];
+      if (deleted) {
+        setPokemon((prev) => prev.filter((p) => p.id !== deleted.id));
+        alert(`Pokémon "${deleted.name}" deletado com sucesso!`);
+      } else {
+        alert("Erro ao deletar Pokémon.");
+      }
+    } catch (err) {
+      console.error("Erro ao deletar Pokémon:", err);
+      alert("Erro inesperado ao deletar.");
+    } finally {
+      setDeleteModal({ isOpen: false, pokemon: null });
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const storedToken = localStorage.getItem("token");
+        if (!storedToken) throw new Error("Usuário não autenticado");
+
+        setToken(storedToken);
+
+        const endpoint = "http://localhost:3001/graphql";
+        const client = new GraphQLClient(endpoint, {
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+          },
+        });
+
+        const variables = {
+          data: {
+            take: 20,
+            skip: (currentPage - 1) * 10,
+          },
+        };
+
+        const res = await client.request(GET_POKEMONS_QUERY, variables);
+        const items = res.getPokemons?.data?.items || [];
+        console.log("Resposta completa:", res);
+        setPokemon(items);
+      } catch (err) {
+        console.error("Erro ao buscar pokemons:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [currentPage]);
 
   const columns = [
     {
@@ -94,13 +125,17 @@ export default function PokemonsPage() {
               <Edit className="h-4 w-4" />
             </Button>
           </Link>
-          <Button variant="destructive" size="sm" onClick={() => handleDelete(pokemon)}>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => handleDelete(pokemon)}
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       ),
     },
-  ]
+  ];
 
   return (
     <div className="space-y-6">
@@ -118,9 +153,13 @@ export default function PokemonsPage() {
       </div>
 
       <Card>
-        <Table data={pokemonData} columns={columns} />
+        <Table data={pokemon} columns={columns} />
         <div className="p-4 border-t">
-          <Pagination currentPage={1} totalPages={10} onPageChange={(page) => console.log("Page:", page)} />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={10}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
         </div>
       </Card>
 
@@ -134,5 +173,5 @@ export default function PokemonsPage() {
         confirmVariant="destructive"
       />
     </div>
-  )
+  );
 }
