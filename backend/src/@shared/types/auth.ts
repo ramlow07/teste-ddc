@@ -21,14 +21,18 @@ export interface MethodType<T, Y> {
 }
 
 export async function genericCaller<T>(context: any, data: any, method: string): Promise<T> {
+  // console.log('genericCaller chamado - method:', method, 'data:', data);
+
   try {
-    return await this.service.execute({
+    const result = await this.service.execute({
       datap: data,
       method,
       tokenData: context?.req?.tokenData,
       customData: {},
       error: undefined,
-    })
+    });
+    // console.log('Resultado do Service:', result);
+    return result;
   } catch (error) {
     console.log(error)
     return { error: { internalServerError: 'Erro de servidor, tente novamente em alguns minutos' } } as any
